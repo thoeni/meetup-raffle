@@ -12,7 +12,13 @@ import (
 	"io/ioutil"
 	"time"
 	"github.com/briandowns/spinner"
+	"regexp"
 )
+
+type meetup struct {
+	name    string
+	eventID string
+}
 
 type Attendee struct {
 	Member Member `json:"member"`
@@ -42,11 +48,17 @@ type EventContext struct {
 func main() {
 
 	if len(os.Args) != 2 {
-		fmt.Printf("Wrong number of arguments. Usage `meetup-raffle 248310043` for meetup with id 248310043")
+		fmt.Printf("Wrong number of arguments. Usage `meetup-raffle https://www.meetup.com/Go-London-User-Group/events/248895386/` \nfor meetup group 'Go-London-User-Group' with event id 248310043")
 		os.Exit(2)
 	}
 
-	m := os.Args[1]
+	meetupURL := os.Args[1]
+
+	m, err := parseMeetup(meetupURL)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	fmt.Printf("The winner is...\n\n")
 	spinner := spinner.New(spinner.CharSets[33], 100*time.Millisecond)
@@ -54,7 +66,7 @@ func main() {
 
 	attendees, err := getAttendeesForMeetup(m)
 	if err != nil {
-		fmt.Printf("Could not get attendees: %v", err)
+		fmt.Printf("\nCould not get attendees: %v", err)
 		return
 	}
 
@@ -75,11 +87,22 @@ func main() {
 	}
 }
 
-func getAttendeesForMeetup(m string) ([]Attendee, error) {
+func parseMeetup(URL string) (meetup, error) {
+	r := regexp.MustCompile("https:\\/\\/www\\.meetup\\.com\\/(.*)\\/events\\/(.*?)\\/")
+	m := r.FindAllStringSubmatch(URL, 1)
+
+	if len(m) != 1 {
+		return meetup{}, errors.New("Cannot parse meetup URL")
+	}
+
+	return meetup{m[0][1], m[0][2]}, nil
+}
+
+func getAttendeesForMeetup(m meetup) ([]Attendee, error) {
 
 	var attendees []Attendee
 
-	URL := fmt.Sprintf("http://api.meetup.com/Go-London-User-Group/events/%s/attendance", m)
+	URL := fmt.Sprintf("http://api.meetup.com/%s/events/%s/attendance", m.name, m.eventID)
 	r, err := http.Get(URL)
 	defer r.Body.Close()
 
@@ -106,11 +129,12 @@ func getAttendeesForMeetup(m string) ([]Attendee, error) {
 func pickOne(attendees []Attendee) Attendee {
 
 	var a Attendee
-	for ; ; {
-		s1 := rand.NewSource(time.Now().UnixNano())
-		r1 := rand.New(s1)
-		i := r1.Intn(len(attendees))
 
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
+
+	for ; ; {
+		i := r.Intn(len(attendees))
 		a = attendees[i]
 		if !a.Member.EventContext.Host &&
 			a.Rsvp.Response == "yes" {
