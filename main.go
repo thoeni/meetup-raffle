@@ -1,18 +1,18 @@
 package main
 
 import (
-	"io"
-	"fmt"
-	"os"
-	"github.com/pkg/errors"
 	"encoding/base64"
-	"net/http"
 	"encoding/json"
-	"math/rand"
-	"io/ioutil"
-	"time"
+	"fmt"
 	"github.com/briandowns/spinner"
+	"github.com/pkg/errors"
+	"io"
+	"io/ioutil"
+	"math/rand"
+	"net/http"
+	"os"
 	"regexp"
+	"time"
 )
 
 type meetup struct {
@@ -138,7 +138,7 @@ func pickOne(attendees []Attendee) Attendee {
 	s := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(s)
 
-	for ; ; {
+	for {
 		i := r.Intn(len(attendees))
 		a = attendees[i]
 		if !a.Member.EventContext.Host &&

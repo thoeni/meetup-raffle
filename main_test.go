@@ -1,13 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"github.com/stretchr/testify/assert"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
-	"net/http/httptest"
-	"net/http"
-	"fmt"
-	"io/ioutil"
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_parseMeetup(t *testing.T) {
