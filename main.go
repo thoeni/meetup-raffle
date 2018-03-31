@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"io/ioutil"
 	"time"
+	"github.com/briandowns/spinner"
 )
 
 type Attendee struct {
@@ -47,40 +48,31 @@ func main() {
 
 	m := os.Args[1]
 
+	fmt.Printf("The winner is...\n\n")
+	spinner := spinner.New(spinner.CharSets[33], 100*time.Millisecond)
+	spinner.Start()
+
 	attendees, err := getAttendeesForMeetup(m)
 	if err != nil {
 		fmt.Printf("Could not get attendees: %v", err)
 		return
 	}
 
-	var a Attendee
-	for ; ; {
-		a = pickOne(attendees)
-		if !a.Member.EventContext.Host &&
-			a.Rsvp.Response == "yes" {
-			break
-		}
-	}
+	a := pickOne(attendees)
 
-	r, err := http.Get(a.Member.Photo.ImgURL)
+	r, err := getAttendeeImage(a)
 	if err != nil {
-		fmt.Printf("Error while reading URL %v", err)
+		fmt.Printf("Error while picking attendee: %v", err)
 		return
 	}
 
-	fmt.Printf("The winner is...\n\n - [%s]\n\n", a.Member.Name)
-	if err := cat(r.Body); err != nil {
+	spinner.Stop()
+
+	fmt.Printf(" - [%s]\n\n", a.Member.Name)
+	if err := cat(r); err != nil {
 		fmt.Printf("could not cat %v", err)
 		return
 	}
-}
-
-func pickOne(attendees []Attendee) Attendee {
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-	i := r1.Intn(len(attendees))
-	a := attendees[i]
-	return a
 }
 
 func getAttendeesForMeetup(m string) ([]Attendee, error) {
@@ -92,7 +84,7 @@ func getAttendeesForMeetup(m string) ([]Attendee, error) {
 	defer r.Body.Close()
 
 	if err != nil {
-		return attendees, errors.Wrap(err, fmt.Sprintf("error while reading URL %v, %v", err, r.StatusCode))
+		return attendees, errors.Wrap(err, fmt.Sprintf("error while reading URL [%s] %v, %v", URL, err, r.StatusCode))
 	}
 
 	if r.StatusCode != http.StatusOK {
@@ -109,6 +101,44 @@ func getAttendeesForMeetup(m string) ([]Attendee, error) {
 	}
 
 	return attendees, nil
+}
+
+func pickOne(attendees []Attendee) Attendee {
+
+	var a Attendee
+	for ; ; {
+		s1 := rand.NewSource(time.Now().UnixNano())
+		r1 := rand.New(s1)
+		i := r1.Intn(len(attendees))
+
+		a = attendees[i]
+		if !a.Member.EventContext.Host &&
+			a.Rsvp.Response == "yes" {
+			break
+		}
+	}
+
+	return a
+}
+
+func getAttendeeImage(a Attendee) (io.ReadCloser, error) {
+	var URL string
+	URL = a.Member.Photo.ImgURL
+
+	if URL == "" {
+		f, err := os.Open("unknown.png")
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot open local file for unknown emoji")
+		}
+		return f, nil
+	}
+
+	r, err := http.Get(URL)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error while reading URL [%s]", URL)
+	}
+
+	return r.Body, nil
 }
 
 func cat(r io.ReadCloser) error {
