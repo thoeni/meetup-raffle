@@ -3,6 +3,11 @@ package main
 import (
 	"reflect"
 	"testing"
+	"net/http/httptest"
+	"net/http"
+	"fmt"
+	"io/ioutil"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_parseMeetup(t *testing.T) {
@@ -30,4 +35,26 @@ func Test_parseMeetup(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_getAttendeesForMeetup(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		b, err := ioutil.ReadFile("testdata/meetup-attendance.json")
+		if err != nil {
+			fmt.Println("Can't open test data", err)
+			t.FailNow()
+		}
+		fmt.Fprintln(w, string(b))
+	}))
+	defer ts.Close()
+
+	mc := MeetupClient{ts.URL}
+
+	a, err := mc.getAttendeesForMeetup(meetup{"test", "1234"})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(a))
+	assert.Equal(t, "John D.", a[0].Member.Name)
+	assert.Equal(t, "Mary J.", a[1].Member.Name)
 }

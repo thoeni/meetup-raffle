@@ -45,6 +45,10 @@ type EventContext struct {
 	Host bool `json:"host"`
 }
 
+type MeetupClient struct {
+	baseURL string
+}
+
 func main() {
 
 	if len(os.Args) != 2 {
@@ -64,7 +68,8 @@ func main() {
 	spinner := spinner.New(spinner.CharSets[33], 100*time.Millisecond)
 	spinner.Start()
 
-	attendees, err := getAttendeesForMeetup(m)
+	mc := MeetupClient{"http://api.meetup.com"}
+	attendees, err := mc.getAttendeesForMeetup(m)
 	if err != nil {
 		fmt.Printf("\nCould not get attendees: %v", err)
 		return
@@ -98,11 +103,11 @@ func parseMeetup(URL string) (meetup, error) {
 	return meetup{m[0][1], m[0][2]}, nil
 }
 
-func getAttendeesForMeetup(m meetup) ([]Attendee, error) {
+func (mc *MeetupClient) getAttendeesForMeetup(m meetup) ([]Attendee, error) {
 
 	var attendees []Attendee
 
-	URL := fmt.Sprintf("http://api.meetup.com/%s/events/%s/attendance", m.name, m.eventID)
+	URL := fmt.Sprintf("%s/%s/events/%s/attendance", mc.baseURL, m.name, m.eventID)
 	r, err := http.Get(URL)
 	defer r.Body.Close()
 

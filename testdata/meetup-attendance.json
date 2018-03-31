@@ -1,0 +1,49 @@
+[
+  {
+    "member": {
+      "id": 999999999,
+      "name": "John D.",
+      "photo": {
+        "id": 999999999,
+        "highres_link": "https://secure.meetupstatic.com/photos/member/e/1/2/8/highres_xxxxxxxxxx.jpeg",
+        "photo_link": "https://secure.meetupstatic.com/photos/member/e/1/2/8/member_xxxxxxxxxx.jpeg",
+        "thumb_link": "https://secure.meetupstatic.com/photos/member/e/1/2/8/thumb_xxxxxxxxxx.jpeg",
+        "type": "member",
+        "base_url": "https://secure.meetupstatic.com"
+      },
+      "event_context": {
+        "host": false
+      }
+    },
+    "rsvp": {
+      "response": "yes",
+      "guests": 0,
+      "updated": 1521044116000
+    }
+  },
+  {
+    "member": {
+      "id": 999999999,
+      "name": "Mary J.",
+      "photo": {
+        "id": 999999999,
+        "highres_link": "https://secure.meetupstatic.com/photos/member/7/3/a/a/highres_xxxxxxxxxx.jpeg",
+        "photo_link": "https://secure.meetupstatic.com/photos/member/7/3/a/a/member_xxxxxxxxxx.jpeg",
+        "thumb_link": "https://secure.meetupstatic.com/photos/member/7/3/a/a/thumb_xxxxxxxxxx.jpeg",
+        "type": "member",
+        "base_url": "https://secure.meetupstatic.com"
+      },
+      "event_context": {
+        "host": false
+      }
+    },
+    "rsvp": {
+      "response": "yes",
+      "guests": 0,
+      "updated": 1519987258000
+    },
+    "status": "absent",
+    "updated": 1522411928000,
+    "guests": 0
+  }
+]
