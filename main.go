@@ -41,7 +41,7 @@ type EventContext struct {
 func main() {
 
 	if len(os.Args) != 2 {
-		fmt.Printf("Wrong number of arguments. Usage `go-pick 248310043` for meetup with id 248310043")
+		fmt.Printf("Wrong number of arguments. Usage `meetup-raffle 248310043` for meetup with id 248310043")
 		os.Exit(2)
 	}
 
